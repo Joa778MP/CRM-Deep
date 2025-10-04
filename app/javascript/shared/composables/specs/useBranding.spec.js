@@ -12,7 +12,7 @@ describe('useBranding', () => {
   beforeEach(() => {
     mockGlobalConfig = {
       value: {
-        installationName: 'MyCompany',
+        installationName: 'DAIC CRM', // Modificado
       },
     };
 
@@ -28,7 +28,7 @@ describe('useBranding', () => {
       const { replaceInstallationName } = useBranding();
       const result = replaceInstallationName('Welcome to Chatwoot');
 
-      expect(result).toBe('Welcome to MyCompany');
+      expect(result).toBe('Welcome to DAIC CRM'); // Modificado
     });
 
     it('should replace multiple occurrences of "Chatwoot"', () => {
@@ -37,7 +37,7 @@ describe('useBranding', () => {
         'Chatwoot is great! Use Chatwoot today.'
       );
 
-      expect(result).toBe('MyCompany is great! Use MyCompany today.');
+      expect(result).toBe('DAIC CRM is great! Use DAIC CRM today.'); // Modificado
     });
 
     it('should return original text when installation name is not provided', () => {
@@ -84,13 +84,13 @@ describe('useBranding', () => {
 
     it('should handle special characters in installation name', () => {
       mockGlobalConfig.value = {
-        installationName: 'My-Company & Co.',
+        installationName: 'DAIC-CRM & Co.', // Modificado
       };
 
       const { replaceInstallationName } = useBranding();
       const result = replaceInstallationName('Welcome to Chatwoot');
 
-      expect(result).toBe('Welcome to My-Company & Co.');
+      expect(result).toBe('Welcome to DAIC-CRM & Co.'); // Modificado
     });
   });
 });
