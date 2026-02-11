@@ -1,0 +1,70 @@
+# Guía de Reemplazo de Logo e Imagen de Marca
+
+## Requisitos Previos (Archivos Necesarios)
+Para realizar el cambio de marca completo, necesitarás los siguientes archivos de tu logo:
+
+1.  **Logo Principal (SVG):**
+    *   Formato: `.svg` (Vectorial)
+    *   Uso: Barras laterales, encabezados, vistas principales.
+    *   Necesitas dos versiones si tu logo cambia en fondos oscuros: `logo.svg` (para fondos claros) y `logo_dark.svg` (para fondos oscuros).
+
+2.  **Logo Miniatura (SVG):**
+    *   Formato: `.svg` (Vectorial, simplificado o isotipo)
+    *   Uso: Iconos pequeños, vistas colapsadas.
+
+3.  **Favicons (PNG):**
+    *   Formato: `.png` con fondo transparente.
+    *   Dimensiones requeridas (en píxeles): 16x16, 32x32, 96x96.
+
+4.  **Iconos de Aplicación (PNG):**
+    *   Formato: `.png`
+    *   Dimensiones requeridas para Android/Apple: 36x36, 48x48, 57x57, 60x60, 72x72, 76x76, 96x96, 114x114, 120x120, 144x144, 152x152, 180x180, 192x192.
+    *   *Nota:* Puedes usar generadores online de "Favicon Generator" para obtener todos estos tamaños automáticamente a partir de una imagen de alta resolución (512x512).
+
+---
+
+## Paso a Paso para la Sustitución
+
+### 1. Reemplazo del Logo en la Interfaz (Sidebar)
+Este es el logo principal que se ve en la aplicación.
+
+*   **Ruta del Archivo:** `/Users/joamtzj/Desktop/DAIC/C-DAIC/CRM-Deep/app/javascript/dashboard/components-next/icon/Logo.vue`
+*   **Acción:**
+    1.  Abre el archivo `Logo.vue`.
+    2.  Localiza las etiquetas `<svg>...</svg>` dentro del `<template>`.
+    3.  Borra todo el contenido dentro de `<svg>...</svg>` actual.
+    4.  Pega el código SVG de tu propio logo dentro de las etiquetas.
+    *   *Importante:* Asegúrate de que tu SVG tenga `fill="currentColor"` o clases de Tailwind si deseas que cambie de color automáticamente, o define los colores fijos (`fill="#TuColor"`) si prefieres que mantenga sus colores originales.
+
+### 2. Reemplazo de Assets de Marca (Brand Assets)
+Estos archivos son usados en emails y páginas públicas.
+
+*   **Directorio:** `/Users/joamtzj/Desktop/DAIC/C-DAIC/CRM-Deep/public/brand-assets/`
+*   **Acción:** Reemplaza los siguientes archivos con tus versiones:
+    *   `logo.svg`: Tu logo principal.
+    *   `logo_dark.svg`: Tu logo para modo oscuro (o una copia del principal si no cambia).
+    *   `logo_thumbnail.svg`: Tu isotipo o versión reducida del logo.
+
+### 3. Reemplazo de Favicons e Iconos Web
+Estos iconos aparecen en la pestaña del navegador y al guardar la app en el móvil.
+
+*   **Directorio:** `/Users/joamtzj/Desktop/DAIC/C-DAIC/CRM-Deep/public/`
+*   **Acción:** Reemplaza todos los archivos de imagen existentes con los tuyos, manteniendo **exactamente el mismo nombre de archivo**.
+    *   `favicon-16x16.png`
+    *   `favicon-32x32.png`
+    *   `favicon-96x96.png`
+    *   `apple-icon-*.png` (todos los tamaños)
+    *   `android-icon-*.png` (todos los tamaños)
+    *   `ms-icon-*.png` (todos los tamaños)
+    *   `manifest.json`: (Opcional) Puedes editar el nombre de la app ('name' y 'short_name') en este archivo.
+
+### 4. (Opcional) Ajuste de Color de Marca
+Para que el color principal de la aplicación coincida con tu logo.
+
+*   **Archivo:** `/Users/joamtzj/Desktop/DAIC/C-DAIC/CRM-Deep/theme/colors.js`
+*   **Acción:**
+    1.  Busca la línea donde se define `brand: '#2781F6'`.
+    2.  Cambia el código hexadecimal `'#2781F6'` por el color principal de tu marca.
+
+---
+**Nota Final:** Después de realizar estos cambios, es recomendable limpiar el caché del navegador y recompilar los assets (si estás en desarrollo, reinicia el servidor) para ver los cambios reflejados correctamente.

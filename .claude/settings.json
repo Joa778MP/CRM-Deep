@@ -5,7 +5,9 @@
       "Bash(ls:*)",
       "Bash(gh api:*)",
       "WebFetch(domain:api.github.com)",
-      "Bash(git branch:*)"
+      "Bash(git branch:*)",
+      "Bash(docker compose up:*)",
+      "Bash(docker compose build:*)"
     ]
   }
 }
