@@ -1,0 +1,463 @@
+================================================================================
+  ROADMAP: Profesionalización del Repositorio CRM-Deep (Fork de Chatwoot)
+  Empresa: DAIC — Deep AI Consulting
+  Objetivo: Convertir el fork en plataforma white-label con flujo Git profesional
+  Fecha de creación: 2026-02-12
+================================================================================
+
+ESTADO ACTUAL DIAGNOSTICADO
+----------------------------
+- Remotes:       origin (Joa778MP/CRM-Deep) + upstream (chatwoot/chatwoot)
+- Rama default:  develop
+- Ref rota:      refs/remotes/origin/develop 2
+- Ramas remotas: ~80+ heredadas de Chatwoot (ruido)
+- Visibilidad:   PÚBLICO (evaluar cambio a privado)
+- validate_push: Protección de develop removida (riesgo de push directo)
+- Divergencia:   94 archivos vs upstream (~3620 ins / ~4796 del)
+- CI/CD:         Workflows de Chatwoot heredados, sin personalizar
+
+================================================================================
+FASE 1 — LIMPIEZA Y SANEAMIENTO DEL REPOSITORIO
+================================================================================
+Prioridad: CRÍTICA
+Objetivo: Partir de una base limpia sin referencias rotas ni ramas basura.
+
+PASO 1.1 — Eliminar referencia rota
+-------------------------------------
+[COMPLETADO — 2026-02-12]
+Se eliminó `refs/remotes/origin/develop 2` con git update-ref -d.
+Verificado: solo quedan origin/develop y upstream/develop.
+
+PASO 1.2 — Limpiar ramas remotas heredadas de Chatwoot
+--------------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Se eliminaron 417 ramas remotas heredadas de Chatwoot en origin.
+Estado final: solo quedan origin/develop, origin/main, origin/HEAD.
+
+PASO 1.3 — Podar referencias locales obsoletas
+------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Se ejecutó git remote prune en origin y upstream + git fetch --all --prune.
+
+PASO 1.4 — Eliminar rama de backup si ya no se necesita
+---------------------------------------------------------
+Existe `backup/develop-pre-sync` localmente.
+
+  git branch -d backup/develop-pre-sync    # borrado seguro (solo si ya fue mergeada)
+  git branch -D backup/develop-pre-sync    # borrado forzado (si estás seguro)
+
+Resultado esperado: Solo quedan `develop` local y ramas remotas limpias.
+
+
+================================================================================
+FASE 2 — ESTRUCTURA DE RAMAS (BRANCHING STRATEGY)
+================================================================================
+Prioridad: ALTA
+Objetivo: Definir la jerarquía de ramas y las reglas de flujo.
+
+PASO 2.1 — Crear rama `main` (producción)
+-------------------------------------------
+[COMPLETADO — 2026-02-12]
+La rama `main` ya existía en origin.
+Se sincronizó con develop (fast-forward, 3 commits: V1.4 + 2 merges).
+main y develop ahora apuntan al mismo commit: 46f1a97bd.
+
+PASO 2.2 — Configurar `main` como rama default en GitHub
+----------------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Se cambió el default branch de `develop` a `main` vía gh api.
+Verificado: gh api repos/Joa778MP/CRM-Deep → default_branch: "main".
+
+PASO 2.3 — Modelo de ramas definitivo
+---------------------------------------
+  main (producción)
+    └── develop (integración / staging)
+          ├── feat/*      → nuevas funcionalidades
+          ├── fix/*       → correcciones de bugs
+          ├── chore/*     → mantenimiento, CI, dependencias
+          ├── refactor/*  → refactorizaciones sin cambio funcional
+          └── release/*   → preparación de releases
+
+  Flujo normal:  feat/* → PR → develop → PR → main → tag → deploy
+  Hotfix:        fix/*  → PR → main (directo, para emergencias)
+
+Convención de nombres:
+  feat/daic-white-label-branding
+  fix/whatsapp-media-timeout
+  chore/sync-upstream-v4.7
+  release/DAIC-v1.0.0
+
+REGLA: Nunca se hace push directo a `main` ni a `develop`. Siempre vía PR.
+
+
+================================================================================
+FASE 3 — PROTECCIÓN DE RAMAS Y HOOKS LOCALES
+================================================================================
+Prioridad: ALTA
+Objetivo: Impedir push directo a ramas críticas (doble capa de seguridad).
+
+PASO 3.1 — Branch Protection Rules en GitHub
+----------------------------------------------
+[COMPLETADO — 2026-02-12]
+Configurado vía gh api para ambas ramas:
+
+Para `main`:
+  - [x] Require a pull request before merging (0 approvals — developer solo)
+  - [x] Require status checks to pass (strict: true, contexts vacíos hasta Fase 6)
+  - [x] Do not allow force pushes
+  - [x] Do not allow deletions
+  - [ ] Enforce admins: OFF (para permitir merge como admin mientras seas solo dev)
+
+Para `develop`:
+  - [x] Require a pull request before merging (0 approvals)
+  - [x] Require status checks to pass (strict: true)
+  - [x] Do not allow force pushes
+  - [x] Do not allow deletions
+
+PASO 3.2 — Actualizar hook local `bin/validate_push`
+------------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Script actualizado para bloquear push directo a main, master y develop.
+Mensajes en español con instrucción de usar PR.
+
+PASO 3.3 — Configurar como pre-push hook de Git
+--------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Copiado bin/validate_push → .git/hooks/pre-push con chmod +x.
+Verificado: desde develop bloquea con exit 1, desde feature branch permite (exit 0).
+
+
+================================================================================
+FASE 4 — CONVENCIONES DE COMMITS Y PULL REQUESTS
+================================================================================
+Prioridad: MEDIA
+Objetivo: Historial de Git legible y rastreable.
+
+PASO 4.1 — Conventional Commits
+---------------------------------
+[COMPLETADO — 2026-02-12]
+Convención documentada y adoptada.
+
+Formato:  tipo(alcance): descripción en imperativo
+Tipos: feat, fix, chore, refactor, docs, style, test, perf
+Reglas: inglés, imperativo, ≤72 chars, sin referencias a Claude
+
+PASO 4.2 — Template de Pull Request
+--------------------------------------
+[COMPLETADO — 2026-02-12]
+Reemplazado template de Chatwoot con versión DAIC.
+Incluye: tipos de cambio (Conventional Commits), descripción, cómo probar, checklist.
+
+PASO 4.3 — Flujo de trabajo diario con feature branches
+---------------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Auto-delete de head branches activado vía gh api (delete_branch_on_merge: true).
+
+Flujo adoptado:
+  1. git checkout develop && git pull origin develop
+  2. git checkout -b feat/mi-feature
+  3. Commits atómicos con Conventional Commits
+  4. git push origin feat/mi-feature
+  5. PR: feat/mi-feature → develop
+  6. CI + review → merge → rama borrada automáticamente
+
+
+================================================================================
+FASE 5 — SINCRONIZACIÓN CON UPSTREAM (CHATWOOT)
+================================================================================
+Prioridad: ALTA
+Objetivo: Recibir updates de seguridad y features sin romper personalizaciones.
+
+PASO 5.1 — Verificar remote upstream
+--------------------------------------
+[COMPLETADO — 2026-02-12]
+Remote upstream ya configurado: https://github.com/chatwoot/chatwoot.git
+Fetch ejecutado con tags incluidos.
+
+PASO 5.2 — Primera verificación de sync
+-----------------------------------------
+[COMPLETADO — 2026-02-12]
+Diagnóstico:
+  - develop vs upstream/develop: 0 commits detrás (100% sincronizado)
+  - develop tiene 53 commits propios (personalizaciones DAIC)
+  - Último tag upstream: v4.10.1 (2026-01-20)
+  - v4.10.1 vs develop: 3 merge commits vacíos (solo metadata de release, sin código nuevo)
+  - upstream/develop tiene 68 commits posteriores a v4.10.1 (todos ya en develop)
+Conclusión: NO se necesita sync — develop ya está al día con upstream.
+
+Procedimiento para futuros syncs (cada 2-4 semanas):
+  git fetch upstream
+  git checkout develop && git pull origin develop
+  git checkout -b chore/sync-upstream-YYYY-MM-DD
+  git merge upstream/develop
+  # Resolver conflictos → verificar tests → PR a develop
+
+PASO 5.3 — Buenas prácticas de sync (referencia)
+--------------------------------------------------
+[DOCUMENTADO — 2026-02-12]
+- NUNCA rebase sobre upstream en ramas compartidas. Usar merge.
+- Preferir sync con tags de release (v4.X.Y) sobre develop de punta.
+- Documentar conflictos resueltos en el PR.
+- Si el sync es grande, dividir: backend primero, frontend después.
+
+PASO 5.4 — Sync por tags de release (referencia)
+--------------------------------------------------
+[DOCUMENTADO — 2026-02-12]
+  git fetch upstream --tags
+  git checkout -b chore/sync-upstream-vX.Y.Z
+  git merge vX.Y.Z
+  # Resolver conflictos → PR → develop
+
+
+================================================================================
+FASE 6 — CI/CD PERSONALIZADO
+================================================================================
+Prioridad: MEDIA
+Objetivo: Automatizar validaciones y builds para tu fork.
+
+PASO 6.1 — Workflows activos (clasificación y ajustes)
+--------------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Se clasificaron 16 workflows. 8 se mantienen activos, 8 desactivados.
+
+Activos (triggers actualizados para incluir main):
+  run_foss_spec.yml             → Lint backend/frontend + tests backend (16 nodos) + tests frontend
+  frontend-fe.yml               → ESLint + tests frontend con coverage
+  lint_pr.yml                   → Valida que títulos de PR sigan Conventional Commits
+  docker-publish.yml            → Build y push de imagen Docker a GHCR
+  logging_percentage_check.yml  → Verifica densidad de logging en Ruby
+  run_mfa_spec.yml              → Tests de MFA (autenticación multifactor)
+  size-limit.yml                → Verifica tamaño de assets compilados
+  test_docker_build.yml         → Verifica que Dockerfile compile (amd64 + arm64)
+
+PASO 6.2 — Workflows desactivados
+------------------------------------
+[COMPLETADO — 2026-02-12]
+Movidos a .github/workflows-disabled/ (recuperables si se necesitan):
+  stale.yml                     → Cierre automático de issues inactivos
+  lock.yml                      → Bloqueo de issues viejos
+  nightly_installer.yml         → Instalador nocturno de Chatwoot
+  publish_codespace_image.yml   → Codespaces de GitHub
+  auto-assign-pr.yml            → Auto-asignación de PRs
+  deploy_check.yml              → Verificación de deploy en Heroku
+  publish_ee_docker.yml         → Docker Enterprise Edition (DockerHub)
+  publish_foss_docker.yml       → Docker Community Edition (DockerHub)
+
+PASO 6.3 — Decisión sobre daic-ci.yml
+----------------------------------------
+[COMPLETADO — 2026-02-12]
+NO se creó workflow separado. Los workflows existentes de Chatwoot ya cubren:
+  - Rubocop (lint backend)
+  - ESLint (lint frontend)
+  - RSpec con 16 nodos paralelos + pgvector + Redis
+  - Tests frontend con coverage
+  - Validación de PR titles (Conventional Commits)
+  - Docker build test (multi-arch)
+Crear daic-ci.yml sería redundante e inferior.
+
+Cambios realizados en workflows activos:
+  - Reemplazado `master` por `main` en triggers
+  - Agregado `main` como branch target en PRs y pushes
+  - Todos los workflows ahora cubren tanto develop como main
+
+PASO 6.4 — Required status checks
+------------------------------------
+[PENDIENTE — requiere que workflows corran al menos 1 vez]
+Después del primer PR con CI ejecutado, agregar como required checks:
+  gh api repos/Joa778MP/CRM-Deep/branches/main/protection/required_status_checks \
+    --method PATCH --field contexts='["lint-backend","lint-frontend","backend-tests","frontend-tests"]'
+
+
+================================================================================
+FASE 7 — ORGANIZACIÓN DE PERSONALIZACIONES DAIC
+================================================================================
+Prioridad: ALTA
+Objetivo: Concentrar cambios white-label en zonas predecibles para minimizar
+          conflictos con upstream.
+
+PASO 7.1 — Mapa de zonas de personalización
+---------------------------------------------
+[COMPLETADO — 2026-02-12]
+Auditoría completa realizada. 28 archivos modificados/nuevos identificados.
+
+Resumen por categoría:
+  Branding (config):    4 archivos CORE — installation_config, app.json, manifest
+  Branding (assets):    8+ archivos ADDITIVE — logos SVG, favicons PNG
+  i18n:                 3 archivos CORE — login.json (en/es), survey en.json
+  Database:             1 archivo ADDITIVE — migración rebrand_to_daic_crm
+  Views:                2 archivos CORE — onboarding, super_admin layout
+  Frontend:             2 archivos CORE — globalConfig.js, useBranding.spec.js
+  API/Docs:             2 archivos CORE — swagger index.html/yml
+  Infra:                3 archivos ADDITIVE — docker-publish, docker-compose, validate_push
+
+Archivos de alto conflicto en syncs:
+  - config/installation_config.yml
+  - enterprise/config/premium_installation_config.yml
+  - app/javascript/shared/store/globalConfig.js
+
+PASO 7.2 — Usar el sistema Enterprise de Chatwoot
+---------------------------------------------------
+[DOCUMENTADO — 2026-02-12]
+enterprise/ ya existe con: LICENSE, app/, config/, lib/, tasks_railtie.rb
+enterprise/config/premium_installation_config.yml ya tiene branding DAIC.
+
+Para futuras features DAIC, usar prepend_mod_with / include_mod_with:
+  # enterprise/app/models/concerns/daic_account_extension.rb
+  module DaicAccountExtension
+    extend ActiveSupport::Concern
+    included do
+      # lógica DAIC aquí
+    end
+  end
+
+PASO 7.3 — Documentar cada personalización
+--------------------------------------------
+[COMPLETADO — 2026-02-12]
+Creado DAIC_CUSTOMIZATIONS.md en la raíz del proyecto.
+Contiene: todas las categorías de cambios, archivos específicos, tipo de cambio
+(CORE vs ADDITIVE), TODOs de branding incompleto, y notas para upstream syncs.
+
+
+================================================================================
+FASE 8 — RELEASES Y VERSIONADO
+================================================================================
+Prioridad: MEDIA
+Objetivo: Versionar releases de forma profesional y reproducible.
+
+PASO 8.1 — Esquema de versionado (Semantic Versioning)
+--------------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Esquema adoptado: DAIC-vMAJOR.MINOR.PATCH
+
+  MAJOR  → Cambio breaking (incompatible con versión anterior)
+  MINOR  → Nueva funcionalidad (compatible hacia atrás)
+  PATCH  → Corrección de bug
+
+  Ejemplos:
+    DAIC-v0.1.0  → Milestone inicial (fork profesionalizado)
+    DAIC-v1.0.0  → Primer release estable de producción
+    DAIC-v1.1.0  → Nueva feature (ej: integración con n8n)
+    DAIC-v1.1.1  → Bugfix
+    DAIC-v2.0.0  → Rediseño mayor o upgrade de Chatwoot con breaking changes
+
+  Decisión clave: La versión en package.json (4.10.1) se mantiene intacta
+  para evitar conflictos con upstream. El versionado DAIC es independiente
+  y se gestiona exclusivamente via tags Git.
+
+PASO 8.2 — Proceso de release
+-------------------------------
+[COMPLETADO — 2026-02-12]
+Proceso documentado y validado. Referencia:
+
+  # 1. Crear rama de release desde develop
+  git checkout develop && git pull origin develop
+  git checkout -b release/DAIC-vX.Y.Z
+
+  # 2. Actualizar CHANGELOG.md (mover [Unreleased] → [DAIC-vX.Y.Z] - fecha)
+  #    NO tocar package.json version (se mantiene sincronizado con upstream).
+
+  # 3. PR: release/DAIC-vX.Y.Z → main
+  #    Título: "release: DAIC vX.Y.Z"
+  #    Descripción: changelog con todos los cambios desde el último release.
+
+  # 4. Después del merge a main, crear tag y GitHub Release
+  git checkout main && git pull origin main
+  git tag -a DAIC-vX.Y.Z -m "DAIC vX.Y.Z — descripción breve"
+  git push origin DAIC-vX.Y.Z
+  gh release create DAIC-vX.Y.Z --title "DAIC vX.Y.Z" --notes-file - < changelog_excerpt
+
+  # 5. Merge back a develop
+  git checkout develop && git merge main && git push origin develop
+
+PASO 8.3 — Changelog
+----------------------
+[COMPLETADO — 2026-02-12]
+Creado CHANGELOG.md en la raíz del proyecto.
+Formato: Keep a Changelog (https://keepachangelog.com).
+Incluye milestone DAIC-v0.1.0 con todas las personalizaciones del fork.
+
+Secciones usadas: Agregado, Cambiado, Desactivado, Base upstream.
+Sección [Unreleased] para cambios pendientes de release.
+
+
+================================================================================
+FASE 9 — SEGURIDAD Y VISIBILIDAD DEL REPOSITORIO
+================================================================================
+Prioridad: ALTA
+Objetivo: Proteger código propietario y credenciales.
+
+PASO 9.1 — Evaluar visibilidad del repositorio
+-------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Estado: PÚBLICO. Evaluación:
+  - Licencia raíz: MIT Expat → permite repo público
+  - enterprise/LICENSE: Chatwoot Enterprise License (propietaria)
+  - Cambios actuales: solo branding/config, sin lógica propietaria DAIC
+  - Conclusión: público es válido. Cambiar a privado cuando se agregue
+    lógica propietaria de DAIC (features exclusivas, algoritmos, etc.)
+
+PASO 9.2 — Verificar .gitignore
+---------------------------------
+[COMPLETADO — 2026-02-12]
+Patrones agregados al .gitignore:
+  .env.*          (con excepción: !.env.example)
+  *.pem           (con excepción: !config/rds-ca-2019-root.pem — CA público AWS)
+  *.key
+
+Patrones que ya existían:
+  .env, master.key, /config/master.key, /config/*.enc, node_modules/, /log/*, /tmp/*
+
+Verificado: 0 archivos sensibles trackeados en Git.
+Excepciones validadas: .env.example (template) y rds-ca-2019-root.pem (cert público).
+
+PASO 9.3 — Activar alertas de seguridad de GitHub
+----------------------------------------------------
+[COMPLETADO — 2026-02-12]
+Activado vía gh api:
+  - [x] Dependabot alerts (vulnerability-alerts PUT)
+  - [x] Dependabot security updates (automated-security-fixes PUT)
+  - [x] Secret scanning: enabled
+  - [x] Secret scanning push protection: enabled (bloquea push con secretos)
+  - [ ] Secret scanning non-provider patterns: requiere GitHub Advanced Security
+  - [ ] Secret scanning validity checks: requiere GitHub Advanced Security
+
+
+================================================================================
+RESUMEN EJECUTIVO — ORDEN DE EJECUCIÓN
+================================================================================
+
+  Fase   Prioridad   Descripción                                Esfuerzo
+  ─────  ─────────   ─────────────────────────────────────────   ────────
+  1      CRÍTICA     Limpieza de refs y ramas                    30 min
+  2      ALTA        Estructura de ramas (crear main)            15 min
+  3      ALTA        Branch protection + hooks                   20 min
+  4      MEDIA       Convenciones de commits y PRs               10 min
+  5      ALTA        Primer sync documentado con upstream        1-2 hrs
+  6      MEDIA       CI/CD personalizado                         1-2 hrs
+  7      ALTA        Organizar personalizaciones DAIC            continuo
+  8      MEDIA       Primer release con tag                      30 min
+  9      ALTA        Seguridad y visibilidad                     15 min
+
+Total estimado para setup inicial: ~1 día de trabajo.
+Después: mantenimiento continuo (syncs cada 2-4 semanas, releases según features).
+
+
+================================================================================
+DIAGRAMA DE FLUJO FINAL
+================================================================================
+
+  upstream/develop ─── fetch ────┐
+  (chatwoot)                     │
+                           merge (periódico)
+                                 │
+                                 ▼
+  feat/* ─── PR ──→ develop ──── PR ──→ main ──→ deploy (producción)
+  fix/*                │                  │
+  chore/*              │                  └── tag DAIC-vX.Y.Z
+                       │                  └── GitHub Release
+                  CI checks
+                (lint, tests)
+
+================================================================================
+FIN DEL ROADMAP
+================================================================================

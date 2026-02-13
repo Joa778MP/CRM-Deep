@@ -29,6 +29,13 @@ master.key
 
 # Ignore env files
 .env
+.env.*
+!.env.example
+
+# Ignore secrets and certificates
+*.pem
+!config/rds-ca-2019-root.pem
+*.key
 
 public/uploads
 public/packs*

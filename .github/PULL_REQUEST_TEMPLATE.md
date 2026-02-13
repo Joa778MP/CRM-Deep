@@ -1,31 +1,26 @@
-# Pull Request Template
+## Tipo de cambio
 
-## Description
+- [ ] feat: Nueva funcionalidad
+- [ ] fix: Corrección de bug
+- [ ] chore: Mantenimiento (CI, deps, configs)
+- [ ] refactor: Refactorización sin cambio funcional
+- [ ] docs: Documentación
+- [ ] style: Formato (no afecta lógica)
+- [ ] test: Tests
+- [ ] perf: Mejora de rendimiento
+- [ ] sync: Merge de upstream (Chatwoot)
 
-Please include a summary of the change and issue(s) fixed. Also, mention relevant motivation, context, and any dependencies that this change requires.
-Fixes # (issue)
+## Descripción
 
-## Type of change
+<!-- Qué cambia y por qué. Referencia issues con "Fixes #123" si aplica. -->
 
-Please delete options that are not relevant.
+## Cómo probar
 
-- [ ] Bug fix (non-breaking change which fixes an issue)
-- [ ] New feature (non-breaking change which adds functionality)
-- [ ] Breaking change (fix or feature that would cause existing functionality not to work as expected)
-- [ ] This change requires a documentation update
+<!-- Pasos para verificar el cambio. -->
 
-## How Has This Been Tested?
+## Checklist
 
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration.
-
-
-## Checklist:
-
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my code
-- [ ] I have commented on my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
+- [ ] Mi código sigue las convenciones del proyecto
+- [ ] Hice self-review de mis cambios
+- [ ] Los tests existentes pasan
+- [ ] No introduzco warnings nuevos
