@@ -1,13 +1,12 @@
 #!/bin/sh
 
-# script prevents pushing to develop and master by mistake
+# Previene push directo a ramas protegidas desde la terminal local.
+# Capa de seguridad complementaria a GitHub Branch Protection Rules.
 
 branch="$(git rev-parse --abbrev-ref HEAD)"
 
-if [ "$branch" = "master" ]; then
-  echo "You can't push directly to master branch"
-  exit 1
-elif [ "$branch" = "develop" ]; then
-  echo "You can't push directly to develop branch"
+if [ "$branch" = "main" ] || [ "$branch" = "master" ] || [ "$branch" = "develop" ]; then
+  echo "BLOQUEADO: No puedes hacer push directo a '$branch'."
+  echo "Crea un Pull Request desde tu feature branch."
   exit 1
 fi
